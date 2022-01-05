@@ -64,6 +64,6 @@ class Messages(APIView):
                         message.messageRead = True
                         message.save()
 
-                return HttpResponse(status=200)
+            return HttpResponse(status=200)
         except Exception as e:
             return HttpResponse(status=500)
