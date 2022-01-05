@@ -34,8 +34,8 @@ const Chat = (props) => {
 
   useEffect(() => {
     if ((activeConversation && activeConversation === otherUser.username) && (unreadMessages.length !== 0)) {
-      updateUnreadMessages(unreadMessages);
-      updateMessages(activeConversation);
+      updateUnreadMessages(unreadMessages); // updates database
+      updateMessages(activeConversation); // updates UI
     }
   }, [updateMessages, activeConversation, otherUser.username, unreadMessages]);
 

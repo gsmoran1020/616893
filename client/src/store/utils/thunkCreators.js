@@ -118,6 +118,7 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
   }
 };
 
+// Makes put request to update database
 export const updateUnreadMessages = async (unreadMessages) => {
   try {
     const response = await axios.put("/api/messages", { unreadMessages: unreadMessages });

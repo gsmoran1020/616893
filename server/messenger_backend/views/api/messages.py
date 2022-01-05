@@ -51,15 +51,17 @@ class Messages(APIView):
     
     
     def put(self, request):
+        """expects { unreadMessages } in the request body."""
         try:
             unread_messages = request.data.get("unreadMessages")
 
+            # make sure list is not empty.
             if unread_messages:
                 for unread_msg in unread_messages:
                     message = Message.objects.filter(id=unread_msg["id"]).first()
 
                     # Acts as a just-in-case check for the messageRead value 
-                    # but we should only be receiving messages that have not been read.
+                    # but we should only be receiving messages that have a False value for messageRead.
                     if message.messageRead == False: 
                         message.messageRead = True
                         message.save()

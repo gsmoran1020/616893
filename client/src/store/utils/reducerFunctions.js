@@ -93,7 +93,7 @@ export const updateReadMessages = (state, activeConversation) => {
         ...convo,
         messages: convo.messages.map((msg) => ({
           ...msg,
-          messageRead: msg.senderId === convo.otherUser.id
+          messageRead: msg.senderId === convo.otherUser.id // setting all messages currently sent by otherUser as read.
         }))
       }
       return newConvo;
