@@ -48,3 +48,22 @@ class Messages(APIView):
             return JsonResponse({"message": message_json, "sender": sender})
         except Exception as e:
             return HttpResponse(status=500)
+    
+    
+    def put(self, request):
+        try:
+            unread_messages = request.data.get("unreadMessages")
+
+            if unread_messages:
+                for unread_msg in unread_messages:
+                    message = Message.objects.filter(id=unread_msg["id"]).first()
+
+                    # Acts as a just-in-case check for the messageRead value 
+                    # but we should only be receiving messages that have not been read.
+                    if message.messageRead == False: 
+                        message.messageRead = True
+                        message.save()
+
+                return HttpResponse(status=200)
+        except Exception as e:
+            return HttpResponse(status=500)

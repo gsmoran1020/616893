@@ -117,3 +117,12 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
     console.error(error);
   }
 };
+
+export const updateUnreadMessages = async (unreadMessages) => {
+  try {
+    const response = await axios.put("/api/messages", { unreadMessages: unreadMessages });
+    return response
+  } catch (error) {
+    console.error(error);
+  }
+};

@@ -37,7 +37,7 @@ class Conversations(APIView):
                 convo_dict = {
                     "id": convo.id,
                     "messages": [
-                        message.to_dict(["id", "text", "senderId", "createdAt"])
+                        message.to_dict(["id", "text", "senderId", "createdAt", "messageRead"])
                         for message in convo.messages.all()
                     ],
                 }
@@ -60,7 +60,8 @@ class Conversations(APIView):
 
                 conversations_response.append(convo_dict)
             conversations_response.sort(
-                key=lambda convo: convo["messages"][0]["createdAt"]
+                key=lambda convo: convo["messages"][-1]["createdAt"],
+                reverse=True
             )
             return JsonResponse(
                 conversations_response,

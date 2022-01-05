@@ -85,3 +85,20 @@ export const addNewConvoToStore = (state, recipientId, message) => {
     }
   });
 };
+
+export const updateReadMessages = (state, activeConversation) => {
+  return state.map((convo) => {
+    if (convo.otherUser.username === activeConversation) {
+      const newConvo = {
+        ...convo,
+        messages: convo.messages.map((msg) => ({
+          ...msg,
+          messageRead: msg.senderId === convo.otherUser.id
+        }))
+      }
+      return newConvo;
+    } else {
+      return convo;
+    }
+  });
+};

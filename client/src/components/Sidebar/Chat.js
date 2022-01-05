@@ -1,8 +1,10 @@
-import React from "react";
-import { Box } from "@material-ui/core";
+import React, { useEffect } from "react";
+import { Box, Typography } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
+import { updateMessages } from "../../store/conversations";
+import { updateUnreadMessages } from "../../store/utils/thunkCreators";
 import { connect } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -21,12 +23,21 @@ const useStyles = makeStyles((theme) => ({
 
 const Chat = (props) => {
   const classes = useStyles();
-  const { conversation } = props;
-  const { otherUser } = conversation;
+  const { conversation, activeConversation, updateMessages } = props;
+  const { otherUser, messages } = conversation;
+  const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
+  const unreadCount = unreadMessages.length === 0 ? "" : unreadMessages.length;
 
   const handleClick = async (conversation) => {
     await props.setActiveChat(conversation.otherUser.username);
   };
+
+  useEffect(() => {
+    if ((activeConversation && activeConversation === otherUser.username) && (unreadMessages.length !== 0)) {
+      updateUnreadMessages(unreadMessages);
+      updateMessages(activeConversation);
+    }
+  }, [updateMessages, activeConversation, otherUser.username, unreadMessages]);
 
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
@@ -37,16 +48,28 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      <Typography>
+        {unreadCount}
+      </Typography>
     </Box>
   );
+};
+
+const mapStateToProps = (state) => {
+  return  {
+    activeConversation: state.activeConversation
+  }
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
+    },
+    updateMessages: (activeConversation) => {
+      dispatch(updateMessages(activeConversation))
     }
-  };
+  }
 };
 
-export default connect(null, mapDispatchToProps)(Chat);
+export default connect(mapStateToProps, mapDispatchToProps)(Chat);
