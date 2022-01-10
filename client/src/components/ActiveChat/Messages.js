@@ -5,7 +5,7 @@ import moment from "moment";
 
 const Messages = (props) => {
   const { messages, otherUser, userId } = props;
-  const lastUserMessage = messages.filter((message) => message.senderId === userId).at(-1);
+  const lastUserMessage = messages.filter((message) => message.senderId === userId).pop();
 
   return (
     <Box>
