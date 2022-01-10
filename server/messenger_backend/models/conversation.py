@@ -9,7 +9,7 @@ class Conversation(utils.CustomModel):
     # conversationSignature exists as a secondary identifier for use
     # in the find_conversation method when the ID is unknown and we need
     # to find a conversation amongst potentially similar group conversations.
-    conversationSignature = models.TextField(null=False)
+    conversationSignature = models.TextField(null=False, unique=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, db_column="userId", related_name="+"
     )
