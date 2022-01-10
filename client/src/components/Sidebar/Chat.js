@@ -55,10 +55,10 @@ const Chat = (props) => {
       />
       <ChatContent conversation={conversation} />
 
-      {unreadMessageCount === 0 ? (
+      {messages.length === 0 ? (
         ""
       ) : (
-        <div className={classes.notification}>
+        <div className={unreadMessageCount === 0 ? "" : classes.notification}>
           <Typography className={classes.unreadCounter}>
             {unreadMessageCount}
           </Typography>

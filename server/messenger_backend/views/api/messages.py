@@ -67,9 +67,12 @@ class Messages(APIView):
                     message = Message.objects.get(pk=unread_msg["id"])
                     message.messageRead = True
                     message.save()
-    
-            requested_convo = Conversation.objects.get(pk=convo_id)
-            messages = list(Message.objects.filter(conversation=requested_convo).order_by("createdAt").values())
-            return JsonResponse({"messages": messages})
+            try:
+                requested_convo = Conversation.objects.get(pk=convo_id)
+                messages = list(Message.objects.filter(conversation=requested_convo).order_by("createdAt").values())
+                return JsonResponse({"messages": messages})
+            except Conversation.DoesNotExist:
+                return JsonResponse({"messages": []})
         except Exception as e:
+            print(e)
             return HttpResponse(status=500)

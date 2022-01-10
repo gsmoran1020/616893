@@ -131,8 +131,10 @@ export const updateUnreadMessages = (messages, otherUser, conversationId) => asy
   try {
     const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
     const { data } = await axios.put("/api/messages", { unreadMessages: unreadMessages, conversationId: conversationId });
-    dispatch(updateMessages(conversationId, data.messages));
-    sendReadUpdates(conversationId, data);
+    if (data.messages.length !== 0) {
+      dispatch(updateMessages(conversationId, data.messages));
+      sendReadUpdates(conversationId, data);
+    }
   } catch (error) {
     console.error(error);
   }
