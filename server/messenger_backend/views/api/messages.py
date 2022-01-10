@@ -53,19 +53,23 @@ class Messages(APIView):
     def put(self, request):
         """expects { unreadMessages } in the request body."""
         try:
-            unread_messages = request.data.get("unreadMessages")
+            user = get_user(request)
 
-            # make sure list is not empty.
+            if user.is_anonymous:
+                return HttpResponse(status=401)
+
+            unread_messages = request.data.get("unreadMessages")
+            convo_id = request.data.get("conversationId")
+
+            # make sure list is not empty and update messages.
             if unread_messages:
                 for unread_msg in unread_messages:
-                    message = Message.objects.filter(id=unread_msg["id"]).first()
-
-                    # Acts as a just-in-case check for the messageRead value 
-                    # but we should only be receiving messages that have a False value for messageRead.
-                    if message.messageRead == False: 
-                        message.messageRead = True
-                        message.save()
-
-            return HttpResponse(status=200)
+                    message = Message.objects.get(pk=unread_msg["id"])
+                    message.messageRead = True
+                    message.save()
+    
+            requested_convo = Conversation.objects.get(pk=convo_id)
+            messages = list(Message.objects.filter(conversation=requested_convo).order_by("createdAt").values())
+            return JsonResponse({"messages": messages})
         except Exception as e:
             return HttpResponse(status=500)

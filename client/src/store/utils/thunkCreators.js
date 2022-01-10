@@ -5,6 +5,7 @@ import {
   addConversation,
   setNewMessage,
   setSearchedUsers,
+  updateMessages
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 
@@ -91,6 +92,13 @@ const sendMessage = (data, body) => {
   });
 };
 
+const sendReadUpdates = (conversationId, data) => {
+  socket.emit("messages-read", {
+    conversationId: conversationId,
+    messages: data.messages,
+  });
+};
+
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
 export const postMessage = (body) => async (dispatch) => {
@@ -118,11 +126,13 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
   }
 };
 
-// Makes put request to update database
-export const updateUnreadMessages = async (unreadMessages) => {
+// Makes put request to update database and dispatches update function for UI
+export const updateUnreadMessages = (messages, otherUser, conversationId) => async (dispatch) => {
   try {
-    const response = await axios.put("/api/messages", { unreadMessages: unreadMessages });
-    return response
+    const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
+    const { data } = await axios.put("/api/messages", { unreadMessages: unreadMessages, conversationId: conversationId });
+    dispatch(updateMessages(conversationId, data.messages));
+    sendReadUpdates(conversationId, data);
   } catch (error) {
     console.error(error);
   }

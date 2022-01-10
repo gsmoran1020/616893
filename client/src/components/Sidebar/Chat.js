@@ -3,7 +3,6 @@ import { Box, Typography } from "@material-ui/core";
 import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
-import { updateMessages } from "../../store/conversations";
 import { updateUnreadMessages } from "../../store/utils/thunkCreators";
 import { connect } from "react-redux";
 
@@ -18,26 +17,33 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       cursor: "grab"
     }
+  },
+  notification: {
+    backgroundColor: "#3E92FE",
+    borderRadius: "50%",
+    textAlign: "center",
+    width: "25px",
+    height: "25px",
+  },
+  unreadCounter: {
+    color: "white"
   }
 }));
 
 const Chat = (props) => {
   const classes = useStyles();
-  const { conversation, activeConversation, updateMessages } = props;
-  const { otherUser, messages } = conversation;
-  const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
-  const unreadCount = unreadMessages.length === 0 ? "" : unreadMessages.length;
+  const { conversation, activeConversation, updateUnreadMessages} = props;
+  const { otherUser, messages, unreadMessageCount } = conversation;
 
   const handleClick = async (conversation) => {
     await props.setActiveChat(conversation.otherUser.username);
   };
 
   useEffect(() => {
-    if ((activeConversation && activeConversation === otherUser.username) && (unreadMessages.length !== 0)) {
-      updateUnreadMessages(unreadMessages); // updates database
-      updateMessages(activeConversation); // updates UI
+    if ((activeConversation && activeConversation === otherUser.username) && (unreadMessageCount !== 0)) {
+      updateUnreadMessages(messages, otherUser, conversation.id); // updates database and UI
     }
-  }, [updateMessages, activeConversation, otherUser.username, unreadMessages]);
+  }, [activeConversation, messages, otherUser, unreadMessageCount, updateUnreadMessages, conversation.id]);
 
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
@@ -48,16 +54,23 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      <Typography>
-        {unreadCount}
-      </Typography>
+
+      {unreadMessageCount === 0 ? (
+        ""
+      ) : (
+        <div className={classes.notification}>
+          <Typography className={classes.unreadCounter}>
+            {unreadMessageCount}
+          </Typography>
+        </div>
+      )}
     </Box>
   );
 };
 
 const mapStateToProps = (state) => {
   return  {
-    activeConversation: state.activeConversation
+    activeConversation: state.activeConversation,
   }
 };
 
@@ -66,9 +79,9 @@ const mapDispatchToProps = (dispatch) => {
     setActiveChat: (id) => {
       dispatch(setActiveChat(id));
     },
-    updateMessages: (activeConversation) => {
-      dispatch(updateMessages(activeConversation))
-    }
+    updateUnreadMessages: (messages, otherUser, conversationId) => {
+      dispatch(updateUnreadMessages(messages, otherUser, conversationId));
+    },
   }
 };
 
