@@ -92,10 +92,10 @@ const sendMessage = (data, body) => {
   });
 };
 
-const sendReadUpdates = (conversationId, data) => {
+const sendReadUpdates = (conversationId, messages) => {
   socket.emit("messages-read", {
     conversationId: conversationId,
-    messages: data.messages,
+    messages: messages,
   });
 };
 
@@ -130,10 +130,25 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
 export const updateUnreadMessages = (messages, otherUser, conversationId) => async (dispatch) => {
   try {
     const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
-    const { data } = await axios.put("/api/messages", { unreadMessages: unreadMessages, conversationId: conversationId });
-    if (data.messages.length !== 0) {
-      dispatch(updateMessages(conversationId, data.messages));
-      sendReadUpdates(conversationId, data);
+    if (unreadMessages.length !== 0) {
+      await axios.put("/api/messages", { unreadMessages: unreadMessages });
+      
+      // this calculation has to happen before being sent to the reducer function
+      // in order to keep the other user's side updated properly in real time.
+      const updatedMessages = messages.map((msg) => {
+        if (msg.senderId === otherUser.id) {
+          const newMessage = {
+            ...msg,
+            messageRead: true
+          }
+          return newMessage
+        } else {
+          return msg
+        }
+      })
+
+      dispatch(updateMessages(conversationId, updatedMessages));
+      sendReadUpdates(conversationId, updatedMessages);
     }
   } catch (error) {
     console.error(error);

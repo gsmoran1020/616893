@@ -33,17 +33,20 @@ const useStyles = makeStyles((theme) => ({
 const Chat = (props) => {
   const classes = useStyles();
   const { conversation, activeConversation, updateUnreadMessages} = props;
-  const { otherUser, messages, unreadMessageCount } = conversation;
+  const { otherUser, messages } = conversation;
+  const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
+  const unreadMessageCount = unreadMessages.length;
+
 
   const handleClick = async (conversation) => {
     await props.setActiveChat(conversation.otherUser.username);
   };
 
   useEffect(() => {
-    if ((activeConversation && activeConversation === otherUser.username) && (unreadMessageCount !== 0)) {
+    if ((activeConversation && activeConversation === otherUser.username) && (unreadMessageCount !== 0 || unreadMessageCount !== undefined)) {
       updateUnreadMessages(messages, otherUser, conversation.id); // updates database and UI
     }
-  }, [activeConversation, messages, otherUser, unreadMessageCount, updateUnreadMessages, conversation.id]);
+  }, [activeConversation, messages, otherUser, unreadMessageCount, updateUnreadMessages, conversation.id, unreadMessages]);
 
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
@@ -53,12 +56,11 @@ const Chat = (props) => {
         online={otherUser.online}
         sidebar={true}
       />
-      <ChatContent conversation={conversation} />
-
-      {messages.length === 0 ? (
+      <ChatContent conversation={conversation} unreadMessageCount={unreadMessageCount}/>
+      {unreadMessageCount === 0 || unreadMessageCount === undefined ? (
         ""
       ) : (
-        <div className={unreadMessageCount === 0 ? "" : classes.notification}>
+        <div className={classes.notification}>
           <Typography className={classes.unreadCounter}>
             {unreadMessageCount}
           </Typography>

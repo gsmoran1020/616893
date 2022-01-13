@@ -5,7 +5,7 @@ import moment from "moment";
 
 const Messages = (props) => {
   const { messages, otherUser, userId } = props;
-  const lastUserMessage = messages.filter((message) => message.senderId === userId).pop();
+  const lastReadUserMessage = messages.filter((message) => message.senderId === userId && message.messageRead === true).pop();
 
   return (
     <Box>
@@ -17,7 +17,7 @@ const Messages = (props) => {
             key={message.id} 
             message={message} 
             time={time}
-            lastUserMessageId={lastUserMessage.id}
+            lastReadUserMessageId={lastReadUserMessage === undefined ? -1 : lastReadUserMessage.id}
             otherUser={otherUser}
           />
         ) : (

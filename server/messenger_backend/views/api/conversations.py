@@ -58,13 +58,6 @@ class Conversations(APIView):
                 else:
                     convo_dict["otherUser"]["online"] = False
 
-                # set unread message count
-                unreadCount = 0
-                for msg in convo_dict["messages"]:
-                    if not msg["messageRead"] and convo_dict["otherUser"]["id"] == msg["senderId"]:
-                        unreadCount += 1
-                convo_dict["unreadMessageCount"] = unreadCount
-
                 conversations_response.append(convo_dict)
             conversations_response.sort(
                 key=lambda convo: convo["messages"][-1]["createdAt"],

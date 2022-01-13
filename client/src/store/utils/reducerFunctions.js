@@ -95,7 +95,7 @@ export const updateReadMessages = (state, payload) => {
       const newConvo = {
         ...convo,
         messages: [...messages],
-        unreadMessageCount: messages.filter(msg => msg.messageRead === false && msg.senderId === convo.otherUser.id).length,
+        unreadMessageCount: 0,
       }
       return newConvo;
     } else {

@@ -59,20 +59,12 @@ class Messages(APIView):
                 return HttpResponse(status=401)
 
             unread_messages = request.data.get("unreadMessages")
-            convo_id = request.data.get("conversationId")
-
-            # make sure list is not empty and update messages.
-            if unread_messages:
-                for unread_msg in unread_messages:
-                    message = Message.objects.get(pk=unread_msg["id"])
-                    message.messageRead = True
-                    message.save()
-            try:
-                requested_convo = Conversation.objects.get(pk=convo_id)
-                messages = list(Message.objects.filter(conversation=requested_convo).order_by("createdAt").values())
-                return JsonResponse({"messages": messages})
-            except Conversation.DoesNotExist:
-                return JsonResponse({"messages": []})
+            
+            for unread_msg in unread_messages:
+                message = Message.objects.get(pk=unread_msg["id"])
+                message.messageRead = True
+                message.save()
+            return HttpResponse(status=200)
         except Exception as e:
             print(e)
             return HttpResponse(status=500)
