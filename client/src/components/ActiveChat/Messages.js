@@ -5,6 +5,7 @@ import moment from "moment";
 
 const Messages = (props) => {
   const { messages, otherUser, userId } = props;
+  const lastReadUserMessage = messages.filter((message) => message.senderId === userId && message.messageRead === true).pop();
 
   return (
     <Box>
@@ -12,7 +13,13 @@ const Messages = (props) => {
         const time = moment(message.createdAt).format("h:mm");
 
         return message.senderId === userId ? (
-          <SenderBubble key={message.id} text={message.text} time={time} />
+          <SenderBubble 
+            key={message.id} 
+            message={message} 
+            time={time}
+            lastReadUserMessageId={lastReadUserMessage === undefined ? -1 : lastReadUserMessage.id}
+            otherUser={otherUser}
+          />
         ) : (
           <OtherUserBubble key={message.id} text={message.text} time={time} otherUser={otherUser} />
         );

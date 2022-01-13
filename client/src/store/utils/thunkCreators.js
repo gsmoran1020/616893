@@ -5,6 +5,7 @@ import {
   addConversation,
   setNewMessage,
   setSearchedUsers,
+  updateMessages
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
 
@@ -91,6 +92,13 @@ const sendMessage = (data, body) => {
   });
 };
 
+const sendReadUpdates = (conversationId, messages) => {
+  socket.emit("messages-read", {
+    conversationId: conversationId,
+    messages: messages,
+  });
+};
+
 // message format to send: {recipientId, text, conversationId}
 // conversationId will be set to null if its a brand new conversation
 export const postMessage = (body) => async (dispatch) => {
@@ -113,6 +121,35 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
   try {
     const { data } = await axios.get(`/api/users/${searchTerm}`);
     dispatch(setSearchedUsers(data));
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Makes put request to update database and dispatches update function for UI
+export const updateUnreadMessages = (messages, otherUser, conversationId) => async (dispatch) => {
+  try {
+    const unreadMessages = messages.filter(msg => msg.messageRead === false && msg.senderId === otherUser.id);
+    if (unreadMessages.length !== 0) {
+      await axios.put("/api/messages", { unreadMessages: unreadMessages });
+      
+      // this calculation has to happen before being sent to the reducer function
+      // in order to keep the other user's side updated properly in real time.
+      const updatedMessages = messages.map((msg) => {
+        if (msg.senderId === otherUser.id) {
+          const newMessage = {
+            ...msg,
+            messageRead: true
+          }
+          return newMessage
+        } else {
+          return msg
+        }
+      })
+
+      dispatch(updateMessages(conversationId, updatedMessages));
+      sendReadUpdates(conversationId, updatedMessages);
+    }
   } catch (error) {
     console.error(error);
   }
